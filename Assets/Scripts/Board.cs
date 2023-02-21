@@ -1,78 +1,83 @@
 ﻿using UnityEngine ;
 using UnityEngine.Events ;
+using System.Collections.Generic;
+using UnityEngine.UI;
 
-public class Board : MonoBehaviour {
-   [Header ("Input Settings : ")]
-   [SerializeField] private LayerMask boxesLayerMask ;
-   [SerializeField] private float touchRadius ;
+public class Board : MonoBehaviour
+{
+   [SerializeField] private LayerMask boxesLayerMask;
+   [SerializeField] private float touchRadius;
 
-   [Header ("Mark Sprites : ")]
-   [SerializeField] private Sprite spriteX ;
-   [SerializeField] private Sprite spriteO ;
+   [SerializeField] private Sprite spriteX;
+   [SerializeField] private Sprite spriteO;
 
-   [Header ("Mark Colors : ")]
-   [SerializeField] private Color colorX ;
-   [SerializeField] private Color colorO ;
+   [SerializeField] private Color colorX;
+   [SerializeField] private Color colorO;
 
-   public UnityAction<Mark,Color> OnWinAction ;
+   public UnityAction<Mark,Color> OnWinAction;
 
-   public Mark[] marks ;
+   public Mark[] marks;
 
-   private Camera cam ;
+   private Camera cam;
 
-   private Mark currentMark ;
+   private Mark currentMark;
 
-   private bool canPlay ;
+   private bool canPlay;
 
-   private LineRenderer lineRenderer ;
+   private int marksCount = 0;
 
-   private int marksCount = 0 ;
+    private void Start() 
+   {
+      cam = Camera.main;
 
-   private void Start () {
-      cam = Camera.main ;
-      lineRenderer = GetComponent<LineRenderer> () ;
-      lineRenderer.enabled = false ;
+      currentMark = GameManager._instance.mark;
 
-      currentMark = Mark.X ;
+      marks = new Mark[9];
 
-      marks = new Mark[9] ;
-
-      canPlay = true ;
+      canPlay = true;
    }
 
-   private void Update () {
-      if (canPlay && Input.GetMouseButtonUp (0)) {
-         Vector2 touchPosition = cam.ScreenToWorldPoint (Input.mousePosition) ;
+   private void Update() 
+   {
+      if (canPlay && Input.GetMouseButtonUp(0)) 
+      {
+         Vector2 touchPosition = cam.ScreenToWorldPoint (Input.mousePosition);
 
-         Collider2D hit = Physics2D.OverlapCircle (touchPosition, touchRadius, boxesLayerMask) ;
+         Collider2D hit = Physics2D.OverlapCircle (touchPosition, touchRadius, boxesLayerMask);
 
          if (hit)//box is touched.
-            HitBox (hit.GetComponent <Box> ()) ;
+            HitBox (hit.GetComponent <Box> ());
       }
    }
 
-   private void HitBox (Box box) {
-      if (!box.isMarked) {
-         marks [ box.index ] = currentMark ;
+   private void HitBox(Box box) 
+   {
+      if(!box.isMarked) 
+      {
+         marks [ box.index ] = currentMark;
 
          ICommand command = new PlaceMarkCommand(currentMark, GetColor(), box, GetSprite());
          CommandInvoker.AddCommand(command);
-         //box.SetAsMarked (GetSprite (), currentMark, GetColor ()) ;
-         marksCount++ ;
+         marksCount++;
 
-         //check if anybody wins:
-         bool won = CheckIfWin () ;
-         if (won) {
+         GameManager._instance.gameOver = CheckIfWin();
+
+         if (GameManager._instance.gameOver) 
+         {
             if (OnWinAction != null)
-               OnWinAction.Invoke (currentMark, GetColor ()) ;
+            {
+                OnWinAction.Invoke(currentMark, GetColor ());
+                AddScore();
+            }
 
-            Debug.Log (currentMark.ToString () + " Wins.") ;
+            Debug.Log (currentMark.ToString() + " Wins.");
 
-            canPlay = false ;
-            return ;
+            canPlay = false;
+            return;
          }
 
-         if (marksCount == 9) {
+         if (marksCount == 9)
+         {
             if (OnWinAction != null)
                OnWinAction.Invoke (Mark.None, Color.white) ;
 
@@ -82,48 +87,43 @@ public class Board : MonoBehaviour {
             return ;
          }
 
-         SwitchPlayer () ;
+         SwitchPlayer();
       }
    }
 
-   private bool CheckIfWin () {
+   private bool CheckIfWin()
+   {
       return
       AreBoxesMatched (0, 1, 2) || AreBoxesMatched (3, 4, 5) || AreBoxesMatched (6, 7, 8) ||
       AreBoxesMatched (0, 3, 6) || AreBoxesMatched (1, 4, 7) || AreBoxesMatched (2, 5, 8) ||
       AreBoxesMatched (0, 4, 8) || AreBoxesMatched (2, 4, 6) ;
-
    }
 
-   private bool AreBoxesMatched (int i, int j, int k) {
+   private bool AreBoxesMatched(int i, int j, int k)
+   {
       Mark m = currentMark ;
       bool matched = (marks [ i ] == m && marks [ j ] == m && marks [ k ] == m) ;
-
-      if (matched)
-         DrawLine (i, k) ;
 
       return matched ;
    }
 
-   private void DrawLine (int i, int k) {
-      lineRenderer.SetPosition (0, transform.GetChild (i).position) ;
-      lineRenderer.SetPosition (1, transform.GetChild (k).position) ;
-      Color color = GetColor () ;
-      color.a = .3f ;
-      lineRenderer.startColor = color ;
-      lineRenderer.endColor = color ;
-
-      lineRenderer.enabled = true ;
+   private void SwitchPlayer()
+   {
+      currentMark = GameManager._instance.mark = (currentMark == Mark.X) ? Mark.O : Mark.X ;
    }
 
-   private void SwitchPlayer () {
-      currentMark = (currentMark == Mark.X) ? Mark.O : Mark.X ;
-   }
-
-   private Color GetColor () {
+   private Color GetColor()
+   {
       return (currentMark == Mark.X) ? colorX : colorO ;
    }
 
-   private Sprite GetSprite () {
+   private Sprite GetSprite()
+   {
       return (currentMark == Mark.X) ? spriteX : spriteO ;
+   }
+
+   private int AddScore()
+   {
+      return  (currentMark == Mark.X) ? GameManager._instance.xScoreNum++ : GameManager._instance.oScoreNum++;
    }
 }
