@@ -25,7 +25,5 @@ public class PlaceMarkCommand : ICommand
     public void Undo()
     {
         MarkPlacer.RemoveBox(box.index);
-        // GameManager._instance.mark = (mark == Mark.X) ? Mark.O : Mark.X;
-        MarkPlacer.SwitchPlayer(mark);
     }
 }

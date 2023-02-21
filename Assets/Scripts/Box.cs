@@ -1,6 +1,7 @@
 ﻿using UnityEngine ;
 
-public class Box : MonoBehaviour {
+public class Box : MonoBehaviour
+{
    public int index ;
    public Mark mark ;
    public bool isMarked ;

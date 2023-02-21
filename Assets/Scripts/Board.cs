@@ -26,7 +26,7 @@ public class Board : MonoBehaviour
 
    private int marksCount = 0;
 
-    private void Start() 
+   private void Start() 
    {
       cam = Camera.main;
 
@@ -45,7 +45,7 @@ public class Board : MonoBehaviour
 
          Collider2D hit = Physics2D.OverlapCircle (touchPosition, touchRadius, boxesLayerMask);
 
-         if (hit)//box is touched.
+         if (hit)
             HitBox (hit.GetComponent <Box> ());
       }
    }

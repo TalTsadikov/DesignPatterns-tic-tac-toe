@@ -15,7 +15,6 @@ public class WinUI : MonoBehaviour
 
    private void Start() 
    {
-      //uiRestartButton.onClick.AddListener (() => SceneManager.LoadScene (0));
       uiRestartButton.onClick.AddListener (() => ClearBoard());
       board.OnWinAction += OnWinEvent;
 

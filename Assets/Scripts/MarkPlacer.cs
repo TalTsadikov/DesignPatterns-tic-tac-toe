@@ -33,9 +33,4 @@ public static class MarkPlacer
             }
         }
     }
-
-    public static void SwitchPlayer(Mark currentMark)
-    {
-        currentMark = GameManager._instance.mark = (currentMark == Mark.X) ? Mark.X : Mark.O;
-    }
 }
